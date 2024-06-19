@@ -3,7 +3,7 @@ fullnameOverride: zipkin-server
 image:
   repository: registry.hub.docker.com/openzipkin
   name: zipkin
-  tag: 2.24.0
+  tag: 3.1.1
   pullPolicy: IfNotPresent
 
 env:

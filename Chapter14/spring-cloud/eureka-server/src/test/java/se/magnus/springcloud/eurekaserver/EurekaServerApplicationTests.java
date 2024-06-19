@@ -48,4 +48,3 @@ class EurekaServerApplicationTests {
     assertEquals(expectedReponseBody, entity.getBody());
   }
 }
-

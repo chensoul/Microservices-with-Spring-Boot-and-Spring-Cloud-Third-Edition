@@ -32,7 +32,7 @@ import se.magnus.microservices.composite.product.services.ProductCompositeIntegr
     "spring.main.allow-bean-definition-overriding=true",
     "eureka.client.enabled=false",
     "spring.cloud.config.enabled=false"})
-class ProductCompositeServiceApplicationTests {
+class ProductCompositeServiceApplicationTests extends RabbitmqTestBase{
 
   private static final int PRODUCT_ID_OK = 1;
   private static final int PRODUCT_ID_NOT_FOUND = 2;

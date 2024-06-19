@@ -43,7 +43,7 @@ import se.magnus.api.event.Event;
     "spring.cloud.stream.defaultBinder=rabbit",
     "spring.cloud.config.enabled=false"})
 @Import({TestChannelBinderConfiguration.class})
-class MessagingTests {
+class MessagingTests extends RabbitmqTestBase{
 
   private static final Logger LOG = LoggerFactory.getLogger(MessagingTests.class);
 

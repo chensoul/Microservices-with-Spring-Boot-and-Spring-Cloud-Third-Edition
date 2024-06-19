@@ -1,10 +1,13 @@
-version: '2.1'
+version: '3'
 
 services:
   product:
     build: microservices/product-service
     image: hands-on/product-service
-    mem_limit: 512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/product.yml
@@ -14,7 +17,7 @@ services:
       - SPRING_DATA_MONGODB_USERNAME=${MONGODB_USR}
       - SPRING_DATA_MONGODB_PASSWORD=${MONGODB_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       mongodb:
         condition: service_healthy
@@ -24,7 +27,10 @@ services:
   recommendation:
     build: microservices/recommendation-service
     image: hands-on/recommendation-service
-    mem_limit: 512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/recommendation.yml
@@ -34,7 +40,7 @@ services:
       - SPRING_DATA_MONGODB_USERNAME=${MONGODB_USR}
       - SPRING_DATA_MONGODB_PASSWORD=${MONGODB_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       mongodb:
         condition: service_healthy
@@ -44,7 +50,10 @@ services:
   review:
     build: microservices/review-service
     image: hands-on/review-service
-    mem_limit: 512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/review.yml
@@ -53,7 +62,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=${MYSQL_USR}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       mysql:
         condition: service_healthy
@@ -63,14 +72,17 @@ services:
   product-composite:
     build: microservices/product-composite-service
     image: hands-on/product-composite-service
-    mem_limit: 512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/product-composite.yml
       - SPRING_RABBITMQ_USERNAME=${RABBITMQ_USR}
       - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -78,8 +90,11 @@ services:
         condition: service_healthy
 
   mongodb:
-    image: mongo:6.0.4
-    mem_limit: 512m
+    image: mongo:4.4
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     ports:
       - "27017:27017"
     command: mongod
@@ -93,8 +108,11 @@ services:
       retries: 60
 
   mysql:
-    image: mysql:8.0.32
-    mem_limit: 512m
+    image: mysql:8.3.0
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     ports:
       - "3306:3306"
     environment:
@@ -109,11 +127,14 @@ services:
       retries: 60
 
   rabbitmq:
-    image: rabbitmq:3.11.8-management
-    mem_limit: 512m
+    image: rabbitmq:3.13.0-management-alpine
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     ports:
-      - 5672:5672
-      - 15672:15672
+      - "5672:5672"
+      - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USR}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PWD}
@@ -126,15 +147,18 @@ services:
   gateway:
     build: spring-cloud/gateway
     image: hands-on/gateway
-    mem_limit: 512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/gateway.yml
-      - SERVER_SSL_KEY_STORE_PASSWORD=${GATEWAY_TLS_PWD}
+      - SPRING_SSL_BUNDLE_JKS_GATEWAY_KEYSTORE_PASSWORD=${GATEWAY_TLS_PWD}
       - SPRING_RABBITMQ_USERNAME=${RABBITMQ_USR}
       - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     ports:
       - "8443:8443"
     depends_on:
@@ -144,25 +168,31 @@ services:
   auth-server:
     build: spring-cloud/authorization-server
     image: hands-on/auth-server
-    mem_limit: 512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/auth-server.yml
       - SPRING_RABBITMQ_USERNAME=${RABBITMQ_USR}
       - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     healthcheck:
-      test: ["CMD", "curl", "-fs", "http://localhost/actuator/health"]
+      test: ["CMD", "curl", "-fs", "http://localhost:9999/actuator/health"]
       interval: 5s
       timeout: 2s
       retries: 60
 
   zipkin-server:
-    image: openzipkin/zipkin:2.24.0
+    image: openzipkin/zipkin:3.1.1
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     restart: always
-    mem_limit: 1024m
     environment:
       - STORAGE_TYPE=mem
     ports:
-      - 9411:9411
+      - "9411:9411"

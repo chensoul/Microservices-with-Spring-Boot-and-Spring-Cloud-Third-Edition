@@ -1,10 +1,9 @@
-version: '2.1'
+version: '3'
 
 services:
   product:
     build: microservices/product-service
     image: hands-on/product-service
-    mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker,streaming_partitioned,streaming_instance_0,kafka
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/product.yml
@@ -12,7 +11,7 @@ services:
       - SPRING_DATA_MONGODB_USERNAME=${MONGODB_USR}
       - SPRING_DATA_MONGODB_PASSWORD=${MONGODB_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       mongodb:
         condition: service_healthy
@@ -22,7 +21,6 @@ services:
   product-p1:
     build: microservices/product-service
     image: hands-on/product-service
-    mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker,streaming_partitioned,streaming_instance_1,kafka
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/product.yml
@@ -30,7 +28,7 @@ services:
       - SPRING_DATA_MONGODB_USERNAME=${MONGODB_USR}
       - SPRING_DATA_MONGODB_PASSWORD=${MONGODB_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       mongodb:
         condition: service_healthy
@@ -40,7 +38,6 @@ services:
   recommendation:
     build: microservices/recommendation-service
     image: hands-on/recommendation-service
-    mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker,streaming_partitioned,streaming_instance_0,kafka
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/recommendation.yml
@@ -48,7 +45,7 @@ services:
       - SPRING_DATA_MONGODB_USERNAME=${MONGODB_USR}
       - SPRING_DATA_MONGODB_PASSWORD=${MONGODB_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       mongodb:
         condition: service_healthy
@@ -58,7 +55,6 @@ services:
   recommendation-p1:
     build: microservices/recommendation-service
     image: hands-on/recommendation-service
-    mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker,streaming_partitioned,streaming_instance_1,kafka
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/recommendation.yml
@@ -66,7 +62,7 @@ services:
       - SPRING_DATA_MONGODB_USERNAME=${MONGODB_USR}
       - SPRING_DATA_MONGODB_PASSWORD=${MONGODB_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       mongodb:
         condition: service_healthy
@@ -76,14 +72,13 @@ services:
   review:
     build: microservices/review-service
     image: hands-on/review-service
-    mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker,streaming_partitioned,streaming_instance_0,kafka
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/review.yml
       - SPRING_DATASOURCE_USERNAME=${MYSQL_USR}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       mysql:
         condition: service_healthy
@@ -93,14 +88,13 @@ services:
   review-p1:
     build: microservices/review-service
     image: hands-on/review-service
-    mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker,streaming_partitioned,streaming_instance_1,kafka
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/review.yml
       - SPRING_DATASOURCE_USERNAME=${MYSQL_USR}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       mysql:
         condition: service_healthy
@@ -110,12 +104,11 @@ services:
   product-composite:
     build: microservices/product-composite-service
     image: hands-on/product-composite-service
-    mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker,streaming_partitioned,kafka
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/product-composite.yml
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     depends_on:
       kafka:
         condition: service_started
@@ -123,9 +116,8 @@ services:
         condition: service_healthy
 
   mongodb:
-    image: mongo:6.0.4
+    image: mongo:4.4
     restart: always
-    mem_limit: 512m
     ports:
       - "27017:27017"
     command: mongod
@@ -139,9 +131,8 @@ services:
       retries: 60
 
   mysql:
-    image: mysql:8.0.32
+    image: mysql:8.3.0
     restart: always
-    mem_limit: 512m
     ports:
       - "3306:3306"
     environment:
@@ -156,9 +147,8 @@ services:
       retries: 60
 
   kafka:
-    image: confluentinc/cp-kafka:7.3.1
+    image: confluentinc/cp-kafka:7.6.0
     restart: always
-    mem_limit: 1024m
     ports:
       - "9092:9092"
     environment:
@@ -170,9 +160,8 @@ services:
       - zookeeper
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.3.1
+    image: confluentinc/cp-zookeeper:7.6.0
     restart: always
-    mem_limit: 512m
     ports:
       - "2181:2181"
     environment:
@@ -181,13 +170,12 @@ services:
   gateway:
     build: spring-cloud/gateway
     image: hands-on/gateway
-    mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/gateway.yml
-      - SERVER_SSL_KEY_STORE_PASSWORD=${GATEWAY_TLS_PWD}
+      - SPRING_SSL_BUNDLE_JKS_GATEWAY_KEYSTORE_PASSWORD=${GATEWAY_TLS_PWD}
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     ports:
       - "8443:8443"
     depends_on:
@@ -197,12 +185,11 @@ services:
   auth-server:
     build: spring-cloud/authorization-server
     image: hands-on/auth-server
-    mem_limit: 512m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_LOCATION=file:/config-repo/application.yml,file:/config-repo/auth-server.yml
     volumes:
-      - $PWD/config-repo:/config-repo
+      - ./config-repo:/config-repo
     healthcheck:
       test: ["CMD", "curl", "-fs", "http://localhost:4004/actuator/health"]
       interval: 5s
@@ -210,10 +197,9 @@ services:
       retries: 60
 
   jaeger-collector.istio-system:
-    image: openzipkin/zipkin:2.24.0
+    image: openzipkin/zipkin:3.1.1
     restart: always
-    mem_limit: 1024m
     environment:
       - STORAGE_TYPE=mem
     ports:
-      - 9411:9411
+      - "9411:9411"
